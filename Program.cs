@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using ExamenOpdracht.Data;
+using ExamenOpdracht.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExamenOpdracht
@@ -18,6 +21,9 @@ namespace ExamenOpdracht
 
             // Configuratie voor seeding van gegevens
             builder.Services.TryAddScoped<ExamenOpdrachtContext.ExamenOpdrachtContextSeed>();
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ExamenOpdrachtContext>()
+                .AddDefaultTokenProviders();
 
             // Voeg Mvc services toe in een aparte methode
             ConfigureMvcServices(builder.Services);
@@ -26,8 +32,12 @@ namespace ExamenOpdracht
 
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ExamenOpdrachtContext>();
-                ExamenOpdrachtContext.ExamenOpdrachtContextSeed.SeedData(dbContext);
+                var services = scope.ServiceProvider;
+                var dbContext = services.GetRequiredService<ExamenOpdrachtContext>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                ExamenOpdrachtContext.ExamenOpdrachtContextSeed.SeedData(dbContext, userManager, roleManager);
             }
 
             // Configure the HTTP request pipeline.

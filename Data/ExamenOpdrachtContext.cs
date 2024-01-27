@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ExamenOpdracht.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ExamenOpdracht.Data
 {
-    public class ExamenOpdrachtContext : DbContext
+    public class ExamenOpdrachtContext : IdentityDbContext<ApplicationUser>
     {
         public ExamenOpdrachtContext(DbContextOptions<ExamenOpdrachtContext> options)
             : base(options)
@@ -20,10 +22,12 @@ namespace ExamenOpdracht.Data
 
         public class ExamenOpdrachtContextSeed
         {
-            public static void SeedData(ExamenOpdrachtContext context)
+            public static void SeedData(ExamenOpdrachtContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
             {
                 SeedProducts(context);
-                SeedUsers(context);
+                SeedUsers(context, userManager);
+                SeedRoles(roleManager);
+                SeedUserRoles(context, userManager);
                 SeedOrders(context);
             }
 
@@ -45,20 +49,46 @@ namespace ExamenOpdracht.Data
                 }
             }
 
-            private static void SeedUsers(ExamenOpdrachtContext context)
+            private static void SeedUsers(ExamenOpdrachtContext context, UserManager<ApplicationUser> userManager)
             {
                 if (!context.Gebruiker.Any())
                 {
-                    var users = new List<Gebruiker>
+                    var users = new List<ApplicationUser>
                     {
-                        new Gebruiker { GebruikerNaam = "JohnDoe" },
-                        new Gebruiker { GebruikerNaam = "JaneDoe" },
+                        new ApplicationUser { UserName = "JohnDoe", Voornaam = "John", Achternaam = "Doe", Email = "john@example.com" },
+                        new ApplicationUser { UserName = "JaneDoe", Voornaam = "Jane", Achternaam = "Doe", Email = "jane@example.com" },
                         // Voeg meer gebruikers toe indien nodig
                     };
 
-                    context.Gebruiker.AddRange(users);
-                    context.SaveChanges();
+                    foreach (var user in users)
+                    {
+                        userManager.CreateAsync(user, "Wachtwoord123!").Wait();
+                    }
                 }
+            }
+
+            private static void SeedRoles(RoleManager<IdentityRole> roleManager)
+            {
+                if (!roleManager.RoleExistsAsync("Admin").Result)
+                {
+                    var role = new IdentityRole { Name = "Admin" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+
+                if (!roleManager.RoleExistsAsync("User").Result)
+                {
+                    var role = new IdentityRole { Name = "User" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+            }
+
+            private static void SeedUserRoles(ExamenOpdrachtContext context, UserManager<ApplicationUser> userManager)
+            {
+                var user = userManager.FindByNameAsync("JohnDoe").Result;
+                userManager.AddToRoleAsync(user, "Admin").Wait();
+
+                user = userManager.FindByNameAsync("JaneDoe").Result;
+                userManager.AddToRoleAsync(user, "User").Wait();
             }
 
             private static void SeedOrders(ExamenOpdrachtContext context)
