@@ -1,0 +1,48 @@
+﻿@model ExamenOpdracht.Models.Bestelling
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Bestelling</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.BestellingNaam)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.BestellingNaam)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Datum)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Datum)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Aantal)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Aantal)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Product)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Product.Naam)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Gebruiker)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Gebruiker.GebruikerNaam)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.BestellingId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
