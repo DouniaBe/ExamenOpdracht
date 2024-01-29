@@ -6,6 +6,10 @@ using Microsoft.Extensions.Hosting;
 using ExamenOpdracht.Data;
 using ExamenOpdracht.Models;
 using Microsoft.EntityFrameworkCore;
+using ExamenOpdracht.Middleware;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Globalization;
 
 namespace ExamenOpdracht
 {
@@ -69,5 +73,63 @@ namespace ExamenOpdracht
             services.AddRazorPages();
             services.AddControllersWithViews();
         }
+        public void Configure(IApplicationBuilder app)
+        {
+            // ...
+
+            // Voeg jouw custom middleware toe
+            app.UseCustomMiddleware();
+
+            // ...
+        }
+        // ...
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // ...
+
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            services.AddControllersWithViews()
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddDataAnnotationsLocalization();
+
+            // ...
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            // ...
+
+            var supportedCultures = new[]
+            {
+        new CultureInfo("en"),
+        new CultureInfo("nl"),
+        // Voeg meer talen toe indien nodig
+    };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
+            });
+
+            // ...
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+
+            // ...
+        }
+
     }
 }
